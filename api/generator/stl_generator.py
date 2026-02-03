@@ -120,9 +120,19 @@ def text_to_mesh(font_path: str, char: str, size: float = 12.0,
 
 
 def generate_keycap(base_stl_path: str, font_path: str, char: str,
-                    text_size: float = 12.0, engrave_depth: float = 0.8) -> bytes:
+                    text_size: float = 10.0, engrave_depth: float = 0.8,
+                    offset_x: float = 0.0, offset_y: float = 0.0) -> bytes:
     """
     Generate a keycap STL with engraved character.
+
+    Args:
+        base_stl_path: Path to base keycap STL
+        font_path: Path to TTF/OTF font
+        char: Character to engrave
+        text_size: Size of text in mm
+        engrave_depth: Depth of engraving in mm
+        offset_x: Manual X offset for centering (mm)
+        offset_y: Manual Y offset for centering (mm)
 
     Returns: STL file as bytes, or None on failure
     """
@@ -154,8 +164,12 @@ def generate_keycap(base_stl_path: str, font_path: str, char: str,
         base_mesh.export(buffer, file_type='stl')
         return buffer.getvalue()
 
-    # Position cutter at bottom of keycap
-    cutter.apply_translation([center_x, center_y, min_z - 0.1])
+    # Position cutter at bottom of keycap, with manual offset applied
+    cutter.apply_translation([
+        center_x + offset_x,
+        center_y + offset_y,
+        min_z - 0.1
+    ])
 
     # Boolean difference
     try:
@@ -194,7 +208,7 @@ if __name__ == "__main__":
     print(f"Font: {FONT}")
 
     if os.path.exists(BASE_STL) and os.path.exists(FONT):
-        data = generate_keycap(BASE_STL, FONT, "5", 12.0, 0.8)
+        data = generate_keycap(BASE_STL, FONT, "5", 10.0, 0.8, 0.0, 0.0)
         if data:
             with open("test_keycap_5.stl", "wb") as f:
                 f.write(data)

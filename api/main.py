@@ -48,14 +48,17 @@ os.makedirs(FONTS_DIR, exist_ok=True)
 class KeycapConfig(BaseModel):
     id: int
     char: str
-    size: float = 12.0
+    size: float = 10.0
+    offset_x: float = 0.0  # Manual X centering offset
+    offset_y: float = 0.0  # Manual Y centering offset
+    depth: float = 0.8     # Per-keycap engrave depth
 
 
 class GenerateRequest(BaseModel):
     keycaps: List[KeycapConfig]
     font: str = "digitalix.ttf"
     engrave_depth: float = 0.8
-    default_size: float = 12.0
+    default_size: float = 10.0
 
 
 @app.get("/")
@@ -135,7 +138,9 @@ async def generate_keycaps(request: GenerateRequest):
                     font_path=font_path,
                     char=keycap.char,
                     text_size=keycap.size,
-                    engrave_depth=request.engrave_depth
+                    engrave_depth=keycap.depth,
+                    offset_x=keycap.offset_x,
+                    offset_y=keycap.offset_y
                 )
 
                 if stl_data:
@@ -162,8 +167,10 @@ async def generate_keycaps(request: GenerateRequest):
 async def generate_single(
     char: str,
     font: str = "digitalix.ttf",
-    size: float = 12.0,
-    depth: float = 0.8
+    size: float = 10.0,
+    depth: float = 0.8,
+    offset_x: float = 0.0,
+    offset_y: float = 0.0
 ):
     """Generate a single keycap STL."""
     # Find font
@@ -185,7 +192,9 @@ async def generate_single(
             font_path=font_path,
             char=char,
             text_size=size,
-            engrave_depth=depth
+            engrave_depth=depth,
+            offset_x=offset_x,
+            offset_y=offset_y
         )
 
         if stl_data:
