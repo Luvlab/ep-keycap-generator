@@ -1,4 +1,4 @@
-import type { Keycap } from '../App'
+import type { Keycap } from '../types/machines'
 
 interface Props {
   keycap: Keycap
