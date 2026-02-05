@@ -16,7 +16,7 @@ interface UseMidiDetectionReturn {
 
 /**
  * Hook for detecting connected Teenage Engineering EP machines via Web MIDI API.
- * Auto-detects EP-133, EP-1320, EP-2350, and EP-40 based on device name.
+ * Auto-detects EP-133, EP-1320, and EP-40 based on device name.
  */
 export function useMidiDetection(): UseMidiDetectionReturn {
   const [detectedMachine, setDetectedMachine] = useState<MachineType | null>(null);
@@ -32,9 +32,6 @@ export function useMidiDetection(): UseMidiDetectionReturn {
     }
     if (lowerName.includes('ep-1320') || lowerName.includes('ep1320') || lowerName.includes('medieval')) {
       return 'EP-1320';
-    }
-    if (lowerName.includes('ep-2350') || lowerName.includes('ep2350') || lowerName.includes('choral')) {
-      return 'EP-2350';
     }
     if (lowerName.includes('ep-40') || lowerName.includes('ep40')) {
       return 'EP-40';
