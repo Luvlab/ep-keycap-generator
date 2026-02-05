@@ -58,9 +58,7 @@ export default function MachineSelector({
       {/* Machine Info */}
       <div className="machine-info">
         <span className="info-description">{config.description}</span>
-        <span className="info-pads">
-          {config.groups.length} groups × {config.padsPerGroup} pads = {config.groups.length * config.padsPerGroup} total
-        </span>
+        <span className="info-pads">20 keycaps</span>
       </div>
 
       <style>{`

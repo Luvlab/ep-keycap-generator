@@ -16,7 +16,7 @@ export default function KeycapEditor({ keycap, defaultSize, defaultDepth, onUpda
     <div className="bg-te-gray rounded-lg p-6">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-semibold text-te-orange">
-          Edit Keycap: "{keycap.char}"
+          Edit: {keycap.id} ("{keycap.char}")
         </h2>
         <button
           onClick={onClose}
@@ -33,8 +33,8 @@ export default function KeycapEditor({ keycap, defaultSize, defaultDepth, onUpda
           <input
             type="text"
             value={keycap.char}
-            onChange={(e) => onUpdate({ char: e.target.value.slice(0, 2) })}
-            maxLength={2}
+            onChange={(e) => onUpdate({ char: e.target.value.slice(0, 4) })}
+            maxLength={4}
             className="w-full bg-gray-700 rounded px-3 py-2 text-white text-center text-xl font-bold"
           />
         </div>

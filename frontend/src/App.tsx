@@ -1,21 +1,18 @@
 import { useState, useEffect } from 'react'
 import MachineSelector from './components/MachineSelector'
-import PadGrid from './components/PadGrid'
+import KeycapStrip from './components/KeycapStrip'
 import SettingsPanel from './components/SettingsPanel'
 import FontUploader from './components/FontUploader'
 import KeycapEditor from './components/KeycapEditor'
 import { useMidiDetection } from './hooks/useMidiDetection'
 import {
   MACHINE_CONFIGS,
+  KEYCAP_SEQUENCE,
   createDefaultKeycaps,
-  getTotalPads,
   type MachineType,
-  type GroupId,
-  type FullPadId,
   type Keycap,
 } from './types/machines'
 
-// Re-export Keycap type for components that need it
 export type { Keycap } from './types/machines'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
@@ -34,16 +31,15 @@ function App() {
 
   const machineConfig = MACHINE_CONFIGS[selectedMachine]
 
-  // Keycap state (keyed by FullPadId)
-  const [keycaps, setKeycaps] = useState<Record<FullPadId, Keycap>>(
+  // Keycap state (keyed by keycap ID: "A", "9", "PLAY", etc.)
+  const [keycaps, setKeycaps] = useState<Record<string, Keycap>>(
     createDefaultKeycaps(machineConfig)
   )
 
   // Re-create keycaps when machine changes
   useEffect(() => {
     setKeycaps(createDefaultKeycaps(MACHINE_CONFIGS[selectedMachine]))
-    setSelectedPad(null)
-    setActiveGroup('A')
+    setSelectedKeycap(null)
   }, [selectedMachine])
 
   // Font state
@@ -56,14 +52,13 @@ function App() {
 
   // UI state
   const [isGenerating, setIsGenerating] = useState<boolean>(false)
-  const [selectedPad, setSelectedPad] = useState<FullPadId | null>(null)
-  const [activeGroup, setActiveGroup] = useState<GroupId>('A')
+  const [selectedKeycap, setSelectedKeycap] = useState<string | null>(null)
 
   // Update a single keycap
-  const updateKeycap = (padId: FullPadId, updates: Partial<Keycap>) => {
+  const updateKeycap = (keycapId: string, updates: Partial<Keycap>) => {
     setKeycaps(prev => ({
       ...prev,
-      [padId]: { ...prev[padId], ...updates },
+      [keycapId]: { ...prev[keycapId], ...updates },
     }))
   }
 
@@ -77,14 +72,18 @@ function App() {
   const generateSTLs = async () => {
     setIsGenerating(true)
     try {
-      const keycapList = Object.values(keycaps).map((k, idx) => ({
-        id: idx,
-        char: k.char,
-        size: k.size ?? defaultSize,
-        offset_x: k.offsetX,
-        offset_y: k.offsetY,
-        depth: k.depth ?? engraveDepth,
-      }))
+      const keycapList = KEYCAP_SEQUENCE.map((def) => {
+        const k = keycaps[def.id]
+        return {
+          id: def.position,
+          label: def.id,
+          char: k.char,
+          size: k.size ?? defaultSize,
+          offset_x: k.offsetX,
+          offset_y: k.offsetY,
+          depth: k.depth ?? engraveDepth,
+        }
+      })
 
       const response = await fetch(`${API_URL}/generate`, {
         method: 'POST',
@@ -115,8 +114,7 @@ function App() {
     setIsGenerating(false)
   }
 
-  const selectedKeycapData = selectedPad ? keycaps[selectedPad] : null
-  const totalPads = getTotalPads(machineConfig)
+  const selectedKeycapData = selectedKeycap ? keycaps[selectedKeycap] : null
 
   return (
     <div className="min-h-screen bg-te-dark p-4 md:p-8">
@@ -130,7 +128,7 @@ function App() {
       </header>
 
       <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-4 gap-6">
-        {/* Left: Machine + Grid */}
+        {/* Left: Machine + Keycaps */}
         <div className="lg:col-span-3 space-y-4">
           <MachineSelector
             selectedMachine={selectedMachine}
@@ -139,36 +137,34 @@ function App() {
             midiSupported={midiSupported}
           />
 
-          <div className="bg-te-gray rounded-lg p-4 md:p-6">
+          <div className="bg-te-gray rounded-lg p-3 md:p-4">
             <div className="flex justify-between items-center mb-3">
               <h2 className="text-lg font-semibold text-te-orange">
-                {machineConfig.name} — Pads
+                {machineConfig.name} — Keycaps
               </h2>
               <span className="text-sm text-gray-500">
-                {totalPads} keycaps · click to select · double-click to edit
+                20 keycaps · click to select · double-click to edit
               </span>
             </div>
 
-            <PadGrid
+            <KeycapStrip
               machineConfig={machineConfig}
               keycaps={keycaps}
-              selectedPad={selectedPad}
-              onSelect={setSelectedPad}
+              selectedKeycap={selectedKeycap}
+              onSelect={setSelectedKeycap}
               onUpdate={updateKeycap}
               fontFamily={fontFamily}
-              activeGroup={activeGroup}
-              onGroupChange={setActiveGroup}
             />
           </div>
 
-          {/* Per-Keycap Editor (shows when selected) */}
-          {selectedKeycapData && selectedPad && (
+          {/* Per-Keycap Editor */}
+          {selectedKeycapData && selectedKeycap && (
             <KeycapEditor
               keycap={selectedKeycapData}
               defaultSize={defaultSize}
               defaultDepth={engraveDepth}
-              onUpdate={(updates) => updateKeycap(selectedPad, updates)}
-              onClose={() => setSelectedPad(null)}
+              onUpdate={(updates) => updateKeycap(selectedKeycap, updates)}
+              onClose={() => setSelectedKeycap(null)}
             />
           )}
         </div>
@@ -198,11 +194,11 @@ function App() {
                 : 'bg-te-orange hover:bg-orange-600 cursor-pointer'
             }`}
           >
-            {isGenerating ? 'Generating...' : `Generate ${totalPads} STLs`}
+            {isGenerating ? 'Generating...' : 'Generate 20 STLs'}
           </button>
 
           <p className="text-xs text-gray-500 text-center">
-            Downloads ZIP with {totalPads} STL files for 3D printing
+            Downloads ZIP with 20 STL files for 3D printing
           </p>
         </div>
       </div>
@@ -214,7 +210,7 @@ function App() {
             GitHub
           </a>
           {' · '}
-          For T.E. EP-133 / EP-1320 / EP-2350 / EP-40
+          For T.E. EP-133 / EP-1320 / EP-40
         </p>
       </footer>
     </div>
