@@ -34,6 +34,14 @@ export const KEYCAP_SEQUENCE: KeycapDefinition[] = [
   { position: 19, id: 'PLAY',  defaultLabel: 'PLAY', category: 'transport' },
 ];
 
+// Pad position within the SVG (percentage-based for responsive scaling)
+export interface PadPosition {
+  x: number;  // % from left edge
+  y: number;  // % from top edge
+  w: number;  // % width
+  h: number;  // % height
+}
+
 // Machine configuration
 export interface MachineConfig {
   id: MachineType;
@@ -42,6 +50,47 @@ export interface MachineConfig {
   color: string;
   svgAsset: string | null;        // Path to SVG background
   dotVariant: 'dot' | 'square';   // Position 13 appearance
+  padPositions: Record<string, PadPosition>;  // keycap ID → position on SVG
+}
+
+// Default pad positions (shared across EP-133, EP-1320, EP-40 — very similar layouts)
+// Grid layout:
+//   Row 0: A,  7, 8, 9
+//   Row 1: B,  4, 5, 6
+//   Row 2: C,  1, 2, 3,  MINUS, PLUS
+//   Row 3: D, DOT, 0, ENTER, REC, PLAY
+const COL = [21.5, 33.5, 46, 58.5, 72, 85];     // x% for cols 0-5
+const ROW = [42, 55.5, 69, 83];                   // y% for rows 0-3
+const PW = 11;                                     // pad width %
+const PH = 10.5;                                   // pad height %
+
+function buildPadPositions(): Record<string, PadPosition> {
+  return {
+    // Row 0: banks + numbers
+    'A':     { x: COL[0], y: ROW[0], w: PW, h: PH },
+    '7':     { x: COL[1], y: ROW[0], w: PW, h: PH },
+    '8':     { x: COL[2], y: ROW[0], w: PW, h: PH },
+    '9':     { x: COL[3], y: ROW[0], w: PW, h: PH },
+    // Row 1: banks + numbers
+    'B':     { x: COL[0], y: ROW[1], w: PW, h: PH },
+    '4':     { x: COL[1], y: ROW[1], w: PW, h: PH },
+    '5':     { x: COL[2], y: ROW[1], w: PW, h: PH },
+    '6':     { x: COL[3], y: ROW[1], w: PW, h: PH },
+    // Row 2: banks + numbers + operators
+    'C':     { x: COL[0], y: ROW[2], w: PW, h: PH },
+    '1':     { x: COL[1], y: ROW[2], w: PW, h: PH },
+    '2':     { x: COL[2], y: ROW[2], w: PW, h: PH },
+    '3':     { x: COL[3], y: ROW[2], w: PW, h: PH },
+    'MINUS': { x: COL[4], y: ROW[2], w: PW, h: PH },
+    'PLUS':  { x: COL[5], y: ROW[2], w: PW, h: PH },
+    // Row 3: banks + numbers + transport
+    'D':     { x: COL[0], y: ROW[3], w: PW, h: PH },
+    'DOT':   { x: COL[1], y: ROW[3], w: PW, h: PH },
+    '0':     { x: COL[2], y: ROW[3], w: PW, h: PH },
+    'ENTER': { x: COL[3], y: ROW[3], w: PW, h: PH },
+    'REC':   { x: COL[4], y: ROW[3], w: PW, h: PH },
+    'PLAY':  { x: COL[5], y: ROW[3], w: PW, h: PH },
+  };
 }
 
 export const MACHINE_CONFIGS: Record<MachineType, MachineConfig> = {
@@ -52,6 +101,7 @@ export const MACHINE_CONFIGS: Record<MachineType, MachineConfig> = {
     color: '#FF6B00',
     svgAsset: '/machines/ep-133.svg',
     dotVariant: 'dot',
+    padPositions: buildPadPositions(),
   },
   'EP-1320': {
     id: 'EP-1320',
@@ -60,6 +110,7 @@ export const MACHINE_CONFIGS: Record<MachineType, MachineConfig> = {
     color: '#8B4513',
     svgAsset: '/machines/ep-1320.svg',
     dotVariant: 'dot',
+    padPositions: buildPadPositions(),
   },
   'EP-40': {
     id: 'EP-40',
@@ -68,6 +119,7 @@ export const MACHINE_CONFIGS: Record<MachineType, MachineConfig> = {
     color: '#00503A',
     svgAsset: '/machines/ep-40.svg',
     dotVariant: 'square',
+    padPositions: buildPadPositions(),
   },
 };
 

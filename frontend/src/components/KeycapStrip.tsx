@@ -38,36 +38,39 @@ export default function KeycapStrip({
     else if (e.key === 'Escape') setEditingId(null);
   };
 
-  // Group keycaps by category for visual spacing
-  const prevCategory = (i: number) =>
-    i > 0 ? KEYCAP_SEQUENCE[i - 1].category : null;
+  const { padPositions } = machineConfig;
 
   return (
-    <div className="keycap-strip-wrapper">
-      {/* Machine SVG background */}
-      {machineConfig.svgAsset && (
-        <div className="machine-bg">
+    <div className="keycap-overlay-wrapper">
+      {/* Machine SVG as background with keycaps overlaid */}
+      <div className="machine-container">
+        {machineConfig.svgAsset && (
           <img
             src={machineConfig.svgAsset}
             alt={machineConfig.name}
+            className="machine-svg"
             draggable={false}
           />
-        </div>
-      )}
+        )}
 
-      {/* 20 keycaps in a row */}
-      <div className="keycap-row">
-        {KEYCAP_SEQUENCE.map((def, i) => {
+        {/* 20 keycap buttons absolutely positioned over the SVG */}
+        {KEYCAP_SEQUENCE.map((def) => {
           const keycap = keycaps[def.id];
+          const pos = padPositions[def.id];
+          if (!pos) return null;
+
           const isSelected = selectedKeycap === def.id;
           const isEditing = editingId === def.id;
-          const newGroup = prevCategory(i) !== null && prevCategory(i) !== def.category;
 
           return (
             <button
               key={def.id}
-              className={`keycap ${isSelected ? 'selected' : ''} ${newGroup ? 'gap-left' : ''}`}
+              className={`pad-button ${isSelected ? 'selected' : ''}`}
               style={{
+                left: `${pos.x}%`,
+                top: `${pos.y}%`,
+                width: `${pos.w}%`,
+                height: `${pos.h}%`,
                 '--machine-color': machineConfig.color,
               } as React.CSSProperties}
               onClick={() => {
@@ -83,19 +86,19 @@ export default function KeycapStrip({
                   onChange={(e) => setEditValue(e.target.value)}
                   onBlur={finishEdit}
                   onKeyDown={handleKeyDown}
-                  className="keycap-edit"
+                  className="pad-edit"
                   autoFocus
                   maxLength={4}
                 />
               ) : (
                 <>
                   <span
-                    className="keycap-char"
+                    className="pad-char"
                     style={{ fontFamily: fontFamily || 'inherit' }}
                   >
                     {keycap?.char || def.defaultLabel}
                   </span>
-                  <span className="keycap-label">{def.id}</span>
+                  <span className="pad-label">{def.id}</span>
                 </>
               )}
             </button>
@@ -104,97 +107,75 @@ export default function KeycapStrip({
       </div>
 
       <style>{`
-        .keycap-strip-wrapper {
-          position: relative;
+        .keycap-overlay-wrapper {
           width: 100%;
           border-radius: 8px;
           overflow: hidden;
           background: #1a1a1a;
         }
 
-        .machine-bg {
+        .machine-container {
+          position: relative;
           width: 100%;
-          pointer-events: none;
-          user-select: none;
-          opacity: 0.2;
         }
 
-        .machine-bg img {
+        .machine-svg {
           width: 100%;
           height: auto;
           display: block;
+          pointer-events: none;
+          user-select: none;
+          opacity: 0.35;
         }
 
-        .keycap-row {
-          display: flex;
-          gap: 3px;
-          padding: 12px 8px;
-          overflow-x: auto;
-          -webkit-overflow-scrolling: touch;
-        }
-
-        /* When SVG is present, overlay the keycap row on the bottom */
-        .machine-bg + .keycap-row {
+        /* Each keycap button is absolutely positioned over the SVG */
+        .pad-button {
           position: absolute;
-          bottom: 0;
-          left: 0;
-          right: 0;
-          padding: 8px 6px 12px;
-          background: linear-gradient(transparent, rgba(0,0,0,0.7) 30%);
-        }
-
-        .keycap {
-          flex: 1 0 0;
-          min-width: 36px;
-          aspect-ratio: 1;
-          background: rgba(51, 51, 51, 0.9);
-          border: 2px solid transparent;
-          border-radius: 5px;
+          background: rgba(40, 40, 40, 0.85);
+          border: 2px solid rgba(100, 100, 100, 0.5);
+          border-radius: 6px;
           display: flex;
           flex-direction: column;
           align-items: center;
           justify-content: center;
           cursor: pointer;
-          transition: all 0.12s;
-          position: relative;
+          transition: all 0.15s ease;
           padding: 2px;
+          box-sizing: border-box;
         }
 
-        .keycap:hover {
-          background: rgba(68, 68, 68, 0.95);
-          transform: scale(1.06);
-          z-index: 1;
-        }
-
-        .keycap.selected {
-          border-color: var(--machine-color, #FF6B00);
-          background: rgba(68, 68, 68, 0.95);
-          transform: scale(1.1);
-          box-shadow: 0 0 14px color-mix(in srgb, var(--machine-color, #FF6B00) 40%, transparent);
+        .pad-button:hover {
+          background: rgba(60, 60, 60, 0.95);
+          border-color: rgba(150, 150, 150, 0.7);
+          transform: scale(1.08);
           z-index: 2;
         }
 
-        /* Extra gap between category groups */
-        .keycap.gap-left {
-          margin-left: 6px;
+        .pad-button.selected {
+          border-color: var(--machine-color, #FF6B00);
+          background: rgba(60, 60, 60, 0.95);
+          transform: scale(1.12);
+          box-shadow: 0 0 16px color-mix(in srgb, var(--machine-color, #FF6B00) 50%, transparent);
+          z-index: 3;
         }
 
-        .keycap-char {
-          font-size: clamp(11px, 1.8vw, 18px);
+        .pad-char {
+          font-size: clamp(10px, 2.5vw, 22px);
           font-weight: bold;
           color: #fff;
           line-height: 1.1;
           overflow: hidden;
           text-overflow: ellipsis;
           white-space: nowrap;
-          max-width: 100%;
+          max-width: 90%;
+          text-align: center;
         }
 
-        .keycap-label {
-          font-size: 7px;
-          color: #666;
+        .pad-label {
+          font-size: clamp(6px, 0.8vw, 9px);
+          color: #888;
           position: absolute;
-          bottom: 1px;
+          bottom: 2px;
           left: 0;
           right: 0;
           text-align: center;
@@ -202,24 +183,26 @@ export default function KeycapStrip({
           pointer-events: none;
         }
 
-        .keycap-edit {
-          width: 100%;
-          height: 100%;
+        .pad-edit {
+          width: 90%;
+          height: 60%;
           background: transparent;
           border: none;
           color: white;
           text-align: center;
-          font-size: clamp(10px, 1.6vw, 16px);
+          font-size: clamp(10px, 2vw, 18px);
           font-weight: bold;
           outline: none;
           padding: 0;
         }
 
-        /* Mobile: allow horizontal scroll */
+        /* Responsive: ensure container doesn't get too small */
         @media (max-width: 640px) {
-          .keycap {
-            min-width: 32px;
-            flex: 0 0 32px;
+          .pad-char {
+            font-size: clamp(8px, 3vw, 14px);
+          }
+          .pad-label {
+            font-size: 5px;
           }
         }
       `}</style>

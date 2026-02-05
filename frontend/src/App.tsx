@@ -53,6 +53,7 @@ function App() {
   // UI state
   const [isGenerating, setIsGenerating] = useState<boolean>(false)
   const [selectedKeycap, setSelectedKeycap] = useState<string | null>(null)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   // Update a single keycap
   const updateKeycap = (keycapId: string, updates: Partial<Keycap>) => {
@@ -105,11 +106,13 @@ function App() {
         a.click()
         window.URL.revokeObjectURL(url)
       } else {
-        alert('Generation failed. Check API server.')
+        setErrorMessage('Generation failed. Check API server.')
+        setTimeout(() => setErrorMessage(null), 6000)
       }
     } catch (error) {
       console.error('Error:', error)
-      alert('Could not connect to API server. Make sure the backend is running.')
+      setErrorMessage('Backend not connected. STL generation requires the API server.')
+      setTimeout(() => setErrorMessage(null), 6000)
     }
     setIsGenerating(false)
   }
@@ -137,13 +140,13 @@ function App() {
             midiSupported={midiSupported}
           />
 
-          <div className="bg-te-gray rounded-lg p-3 md:p-4">
-            <div className="flex justify-between items-center mb-3">
+          <div>
+            <div className="flex justify-between items-center mb-2 px-1">
               <h2 className="text-lg font-semibold text-te-orange">
                 {machineConfig.name} — Keycaps
               </h2>
               <span className="text-sm text-gray-500">
-                20 keycaps · click to select · double-click to edit
+                click to select · double-click to edit
               </span>
             </div>
 
@@ -196,6 +199,12 @@ function App() {
           >
             {isGenerating ? 'Generating...' : 'Generate 20 STLs'}
           </button>
+
+          {errorMessage && (
+            <div className="bg-red-900/60 border border-red-700 rounded-lg px-4 py-3 text-sm text-red-200">
+              {errorMessage}
+            </div>
+          )}
 
           <p className="text-xs text-gray-500 text-center">
             Downloads ZIP with 20 STL files for 3D printing

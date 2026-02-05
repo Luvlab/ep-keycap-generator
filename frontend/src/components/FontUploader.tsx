@@ -20,6 +20,7 @@ export default function FontUploader({ selectedFont, onFontSelect, apiUrl }: Pro
   const [isUploading, setIsUploading] = useState(false)
   const [isDragging, setIsDragging] = useState(false)
   const [apiAvailable, setApiAvailable] = useState(false)
+  const [loadError, setLoadError] = useState<string | null>(null)
 
   // Check if API is available
   useEffect(() => {
@@ -60,6 +61,7 @@ export default function FontUploader({ selectedFont, onFontSelect, apiUrl }: Pro
     }
 
     setIsUploading(true)
+    setLoadError(null)
 
     try {
       // Create object URL from font file
@@ -99,7 +101,7 @@ export default function FontUploader({ selectedFont, onFontSelect, apiUrl }: Pro
       }
     } catch (error) {
       console.error('[Font] Load error:', error)
-      alert('Could not load font file. It may be corrupted.')
+      setLoadError('Could not load font file. It may be corrupted.')
     }
 
     setIsUploading(false)
@@ -190,10 +192,8 @@ export default function FontUploader({ selectedFont, onFontSelect, apiUrl }: Pro
         </label>
       </div>
 
-      {!apiAvailable && (
-        <p className="text-xs text-gray-500 mt-2">
-          Fonts loaded client-side (preview only). API needed for STL generation.
-        </p>
+      {loadError && (
+        <p className="text-xs text-red-400 mt-2">{loadError}</p>
       )}
     </div>
   )
