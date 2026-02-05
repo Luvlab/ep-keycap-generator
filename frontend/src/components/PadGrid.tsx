@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { MachineConfig, FullPadId, GroupId, PadNumber, Keycap } from '../types/machines';
+import type { MachineConfig, FullPadId, GroupId, Keycap } from '../types/machines';
 import { createPadId } from '../types/machines';
 
 interface Props {
