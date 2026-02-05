@@ -27,11 +27,11 @@ export const KEYCAP_SEQUENCE: KeycapDefinition[] = [
   { position: 12, id: '1',     defaultLabel: '1',   category: 'number' },
   { position: 13, id: 'DOT',   defaultLabel: '\u00B7', category: 'number' },   // Middle dot
   { position: 14, id: '0',     defaultLabel: '0',   category: 'number' },
-  { position: 15, id: 'ENTER', defaultLabel: 'ENT', category: 'operator' },
+  { position: 15, id: 'ENTER', defaultLabel: 'E',   category: 'operator' },
   { position: 16, id: 'MINUS', defaultLabel: '\u2212', category: 'operator' }, // Minus sign
   { position: 17, id: 'PLUS',  defaultLabel: '+',   category: 'operator' },
-  { position: 18, id: 'REC',   defaultLabel: 'REC', category: 'transport' },
-  { position: 19, id: 'PLAY',  defaultLabel: 'PLAY', category: 'transport' },
+  { position: 18, id: 'REC',   defaultLabel: '\u25CF', category: 'transport' },  // Filled circle (record)
+  { position: 19, id: 'PLAY',  defaultLabel: '\u25B6', category: 'transport' },  // Play triangle
 ];
 
 // Pad position within the SVG (percentage-based for responsive scaling)
@@ -59,10 +59,10 @@ export interface MachineConfig {
 //   Row 1: B,  4, 5, 6
 //   Row 2: C,  1, 2, 3,  MINUS, PLUS
 //   Row 3: D, DOT, 0, ENTER, REC, PLAY
-const COL = [21.5, 33.5, 46, 58.5, 72, 85];     // x% for cols 0-5
-const ROW = [42, 55.5, 69, 83];                   // y% for rows 0-3
+const COL = [23, 35.5, 47.5, 59.5, 72, 84.5];    // x% for cols 0-5
+const ROW = [14.5, 35.5, 56.5, 77.5];             // y% for rows 0-3
 const PW = 11;                                     // pad width %
-const PH = 10.5;                                   // pad height %
+const PH = 16;                                     // pad height % (portrait rectangles)
 
 function buildPadPositions(): Record<string, PadPosition> {
   return {

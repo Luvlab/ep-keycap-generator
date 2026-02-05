@@ -157,6 +157,7 @@ function App() {
               onSelect={setSelectedKeycap}
               onUpdate={updateKeycap}
               fontFamily={fontFamily}
+              defaultSize={defaultSize}
             />
           </div>
 
@@ -172,8 +173,8 @@ function App() {
           )}
         </div>
 
-        {/* Right: Settings Panel */}
-        <div className="space-y-4">
+        {/* Right: Settings Panel — aligned to bottom of machine */}
+        <div className="space-y-4 self-end">
           <FontUploader
             selectedFont={selectedFontName}
             onFontSelect={handleFontSelect}

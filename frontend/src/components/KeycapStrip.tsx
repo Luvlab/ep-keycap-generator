@@ -8,6 +8,7 @@ interface Props {
   onSelect: (id: string | null) => void;
   onUpdate: (id: string, updates: Partial<Keycap>) => void;
   fontFamily: string;
+  defaultSize: number;
 }
 
 export default function KeycapStrip({
@@ -17,6 +18,7 @@ export default function KeycapStrip({
   onSelect,
   onUpdate,
   fontFamily,
+  defaultSize,
 }: Props) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState('');
@@ -62,6 +64,12 @@ export default function KeycapStrip({
           const isSelected = selectedKeycap === def.id;
           const isEditing = editingId === def.id;
 
+          // Visual preview: apply size and offset from keycap settings
+          const effectiveSize = keycap?.size ?? defaultSize;
+          const sizeScale = effectiveSize / 10; // 10mm = 1x scale, normalize around default
+          const ox = keycap?.offsetX ?? 0;
+          const oy = keycap?.offsetY ?? 0;
+
           return (
             <button
               key={def.id}
@@ -94,7 +102,10 @@ export default function KeycapStrip({
                 <>
                   <span
                     className="pad-char"
-                    style={{ fontFamily: fontFamily || 'inherit' }}
+                    style={{
+                      fontFamily: fontFamily || 'inherit',
+                      transform: `scale(${sizeScale}) translate(${ox * 2}px, ${-oy * 2}px)`,
+                    }}
                   >
                     {keycap?.char || def.defaultLabel}
                   </span>
@@ -142,40 +153,38 @@ export default function KeycapStrip({
           transition: all 0.15s ease;
           padding: 2px;
           box-sizing: border-box;
+          overflow: hidden;
         }
 
         .pad-button:hover {
           background: rgba(60, 60, 60, 0.95);
           border-color: rgba(150, 150, 150, 0.7);
-          transform: scale(1.08);
           z-index: 2;
         }
 
         .pad-button.selected {
           border-color: var(--machine-color, #FF6B00);
           background: rgba(60, 60, 60, 0.95);
-          transform: scale(1.12);
-          box-shadow: 0 0 16px color-mix(in srgb, var(--machine-color, #FF6B00) 50%, transparent);
+          box-shadow: 0 0 12px color-mix(in srgb, var(--machine-color, #FF6B00) 50%, transparent);
           z-index: 3;
         }
 
         .pad-char {
-          font-size: clamp(10px, 2.5vw, 22px);
+          font-size: clamp(12px, 2.5vw, 24px);
           font-weight: bold;
           color: #fff;
           line-height: 1.1;
-          overflow: hidden;
-          text-overflow: ellipsis;
+          overflow: visible;
           white-space: nowrap;
-          max-width: 90%;
           text-align: center;
+          transition: transform 0.15s ease;
         }
 
         .pad-label {
-          font-size: clamp(6px, 0.8vw, 9px);
-          color: #888;
+          font-size: clamp(5px, 0.7vw, 8px);
+          color: #666;
           position: absolute;
-          bottom: 2px;
+          bottom: 1px;
           left: 0;
           right: 0;
           text-align: center;
@@ -185,7 +194,7 @@ export default function KeycapStrip({
 
         .pad-edit {
           width: 90%;
-          height: 60%;
+          height: 50%;
           background: transparent;
           border: none;
           color: white;
@@ -196,10 +205,10 @@ export default function KeycapStrip({
           padding: 0;
         }
 
-        /* Responsive: ensure container doesn't get too small */
+        /* Responsive */
         @media (max-width: 640px) {
           .pad-char {
-            font-size: clamp(8px, 3vw, 14px);
+            font-size: clamp(8px, 3vw, 16px);
           }
           .pad-label {
             font-size: 5px;
